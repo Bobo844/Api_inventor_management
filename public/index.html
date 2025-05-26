@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Gestion d'Inventaire</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .response {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Test API - Gestion d'Inventaire</h1>
+
+        <!-- Section Authentification -->
+        <div class="section">
+            <h2>Authentification</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>Inscription</h3>
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" name="username" placeholder="Nom d'utilisateur" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" name="password" placeholder="Mot de passe" required>
+                        </div>
+                        <div class="mb-3">
+                            <select class="form-control" name="role" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="MANAGER">Gestionnaire</option>
+                                <option value="USER">Employé</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">S'inscrire</button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <h3>Connexion</h3>
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <input type="email" class="form-control" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" name="password" placeholder="Mot de passe" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Se connecter</button>
+                    </form>
+                </div>
+            </div>
+            <div id="authResponse" class="response"></div>
+        </div>
+
+        <!-- Section Magasins -->
+        <div class="section">
+            <h2>Gestion des Magasins</h2>
+            <form id="storeForm">
+                <div class="mb-3">
+                    <input type="text" class="form-control" name="name" placeholder="Nom du magasin" required>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" name="address" placeholder="Adresse" required>
+                </div>
+                <div class="mb-3">
+                    <input type="tel" class="form-control" name="phone" placeholder="Téléphone" required>
+                </div>
+                <div class="mb-3">
+                    <input type="email" class="form-control" name="email" placeholder="Email" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Créer Magasin</button>
+            </form>
+            <button id="getStores" class="btn btn-info mt-2">Liste des Magasins</button>
+            <div id="storeResponse" class="response"></div>
+        </div>
+
+        <!-- Section Produits -->
+        <div class="section">
+            <h2>Gestion des Produits</h2>
+            <form id="productForm">
+                <div class="mb-3">
+                    <input type="text" class="form-control" name="name" placeholder="Nom du produit" required>
+                </div>
+                <div class="mb-3">
+                    <textarea class="form-control" name="description" placeholder="Description" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" name="sku" placeholder="SKU" required>
+                </div>
+                <div class="mb-3">
+                    <input type="number" class="form-control" name="price" placeholder="Prix" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <input type="number" class="form-control" name="current_stock" placeholder="Stock actuel" required>
+                </div>
+                <div class="mb-3">
+                    <input type="number" class="form-control" name="min_stock_level" placeholder="Niveau minimum de stock" required>
+                </div>
+                <div class="mb-3">
+                    <select class="form-control" name="category_id" required>
+                        <option value="">Sélectionner une catégorie</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <select class="form-control" name="store_id" required>
+                        <option value="">Sélectionner un magasin</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <select class="form-control" name="status" required>
+                        <option value="ACTIVE">Actif</option>
+                        <option value="INACTIVE">Inactif</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Créer Produit</button>
+            </form>
+            <button id="getProducts" class="btn btn-info mt-2">Liste des Produits</button>
+            <div id="productResponse" class="response"></div>
+        </div>
+
+        <!-- Section Commandes -->
+        <div class="section">
+            <h2>Gestion des Commandes</h2>
+            <form id="orderForm">
+                <div class="mb-3">
+                    <select class="form-control" name="supplierId" required>
+                        <option value="">Sélectionner un fournisseur</option>
+                    </select>
+                </div>
+                <div id="orderItems">
+                    <div class="order-item mb-3">
+                        <div class="row">
+                            <div class="col">
+                                <select class="form-control" name="productId" required>
+                                    <option value="">Sélectionner un produit</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control" name="quantity" placeholder="Quantité" required>
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control" name="unitPrice" placeholder="Prix unitaire" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary mb-3" id="addOrderItem">Ajouter un produit</button>
+                <div class="mb-3">
+                    <input type="date" class="form-control" name="expectedDeliveryDate" required>
+                </div>
+                <div class="mb-3">
+                    <textarea class="form-control" name="notes" placeholder="Notes"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Créer Commande</button>
+            </form>
+            <button id="getOrders" class="btn btn-info mt-2">Liste des Commandes</button>
+            <div id="orderResponse" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:3000/api';
+        let token = localStorage.getItem('token');
+
+        // Fonctions utilitaires
+        function showResponse(elementId, data) {
+            document.getElementById(elementId).textContent = JSON.stringify(data, null, 2);
+        }
+
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+        // Remplit un select de produits
+        async function populateProductSelect(select) {
+            try {
+                const response = await fetch(`${API_URL}/products`, { headers: getHeaders() });
+                const products = await response.json();
+                select.innerHTML = '<option value="">Sélectionner un produit</option>';
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erreur chargement produits:', error);
+            }
+        }
+
+        // Remplit un select de fournisseurs
+        async function populateSupplierSelect(select) {
+            try {
+                const response = await fetch(`${API_URL}/suppliers?status=ACTIVE`, { headers: getHeaders() });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erreur HTTP:', response.status, errorText);
+                    select.innerHTML = `<option value="">Erreur: ${response.status}</option>`;
+                    return;
+                }
+                const suppliers = await response.json();
+                select.innerHTML = '<option value="">Sélectionner un fournisseur</option>';
+                suppliers.forEach(supplier => {
+                    const option = document.createElement('option');
+                    option.value = supplier.id;
+                    option.textContent = supplier.name;
+                    select.appendChild(option);
+                });
+                if (suppliers.length === 0) {
+                    select.innerHTML = '<option value="">Aucun fournisseur actif</option>';
+                }
+            } catch (error) {
+                console.error('Erreur chargement fournisseurs:', error);
+                select.innerHTML = '<option value="">Erreur chargement fournisseurs</option>';
+            }
+        }
+
+        // Gestion de l'authentification
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                const data = await response.json();
+                showResponse('authResponse', data);
+                if (data.token) {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    await loadInitialData();
+                }
+            } catch (error) {
+                showResponse('authResponse', { error: error.message });
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                const data = await response.json();
+                showResponse('authResponse', data);
+                if (data.token) {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    await loadInitialData();
+                }
+            } catch (error) {
+                showResponse('authResponse', { error: error.message });
+            }
+        });
+
+        // Gestion des magasins
+        document.getElementById('storeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`${API_URL}/stores`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                const data = await response.json();
+                showResponse('storeResponse', data);
+            } catch (error) {
+                showResponse('storeResponse', { error: error.message });
+            }
+        });
+
+        document.getElementById('getStores').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_URL}/stores`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('storeResponse', data);
+            } catch (error) {
+                showResponse('storeResponse', { error: error.message });
+            }
+        });
+
+        // Gestion des produits
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                const data = await response.json();
+                showResponse('productResponse', data);
+            } catch (error) {
+                showResponse('productResponse', { error: error.message });
+            }
+        });
+
+        document.getElementById('getProducts').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_URL}/products`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('productResponse', data);
+            } catch (error) {
+                showResponse('productResponse', { error: error.message });
+            }
+        });
+
+        // Gestion des commandes
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const items = [];
+            document.querySelectorAll('.order-item').forEach(item => {
+                items.push({
+                    product_id: item.querySelector('[name="productId"]').value,
+                    quantity: item.querySelector('[name="quantity"]').value,
+                    unit_price: item.querySelector('[name="unitPrice"]').value
+                });
+            });
+
+            const orderData = {
+                supplier_id: formData.get('supplierId'),
+                items,
+                expected_delivery_date: formData.get('expectedDeliveryDate'),
+                notes: formData.get('notes')
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/orders`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(orderData)
+                });
+                const data = await response.json();
+                showResponse('orderResponse', data);
+            } catch (error) {
+                showResponse('orderResponse', { error: error.message });
+            }
+        });
+
+        document.getElementById('addOrderItem').addEventListener('click', async () => {
+            const template = document.querySelector('.order-item').cloneNode(true);
+            template.querySelectorAll('input').forEach(input => input.value = '');
+            // Remplir dynamiquement le select produit du nouvel item uniquement
+            const productSelect = template.querySelector('select[name="productId"]');
+            if (productSelect) {
+                await populateProductSelect(productSelect);
+            }
+            // S'assurer que le select fournisseur n'est PAS dupliqué (il n'est pas dans .order-item)
+            document.getElementById('orderItems').appendChild(template);
+        });
+
+        document.getElementById('getOrders').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_URL}/orders`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('orderResponse', data);
+            } catch (error) {
+                showResponse('orderResponse', { error: error.message });
+            }
+        });
+
+        // Chargement initial des données
+        async function loadInitialData() {
+            try {
+                // Charger les fournisseurs
+                const supplierSelects = document.querySelectorAll('[name="supplierId"]');
+                for (const select of supplierSelects) {
+                    await populateSupplierSelect(select);
+                }
+
+                // Charger les magasins
+                const storesResponse = await fetch(`${API_URL}/stores`, {
+                    headers: getHeaders()
+                });
+                const stores = await storesResponse.json();
+                const storeSelects = document.querySelectorAll('[name="store_id"]');
+                storeSelects.forEach(select => {
+                    select.innerHTML = '<option value="">Sélectionner un magasin</option>';
+                    stores.forEach(store => {
+                        const option = document.createElement('option');
+                        option.value = store.id;
+                        option.textContent = store.name;
+                        select.appendChild(option);
+                    });
+                });
+
+                // Charger les catégories
+                const categoriesResponse = await fetch(`${API_URL}/categories`, {
+                    headers: getHeaders()
+                });
+                const categories = await categoriesResponse.json();
+                const categorySelects = document.querySelectorAll('[name="category_id"]');
+                categorySelects.forEach(select => {
+                    select.innerHTML = '<option value="">Sélectionner une catégorie</option>';
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        select.appendChild(option);
+                    });
+                });
+
+                // Charger les produits (pour les commandes)
+                const productSelects = document.querySelectorAll('[name="productId"]');
+                for (const select of productSelects) {
+                    await populateProductSelect(select);
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des données:', error);
+            }
+        }
+
+        // Charger les données initiales si un token existe
+        if (token) {
+            loadInitialData();
+        }
+    </script>
+</body>
+</html> 
